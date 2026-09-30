@@ -23,13 +23,25 @@ It handles what browsers produce with **Copy as cURL (bash)**:
 - multipart uploads, basic auth, proxy, timeouts
 - `$'…'` quoting and line continuations
 
-## Quick start
+## Download
 
-**Install:** open `dist/CurlToCode-<version>.pkg` (Installer wizard) or
-`dist/CurlToCode-<version>.dmg` (drag to Applications). Requires macOS 13+. First launch
-of an unsigned build: right-click the app ▸ **Open**.
+Latest version: **[2.0](https://github.com/sIldefonsoRR/CurlToCode/releases/tag/v2.0)**. Needs macOS 13 or later; runs natively on Apple silicon and Intel.
 
-**Build from source** (Command Line Tools or Xcode):
+| Download | How to install |
+|---|---|
+| [**CurlToCode-2.0.pkg**](https://github.com/sIldefonsoRR/CurlToCode/releases/download/v2.0/CurlToCode-2.0.pkg) | Installer wizard that puts the app in Applications |
+| [**CurlToCode-2.0.dmg**](https://github.com/sIldefonsoRR/CurlToCode/releases/download/v2.0/CurlToCode-2.0.dmg) | Open it and drag **cURL to Code** onto Applications |
+
+[SHA-256 checksums](https://github.com/sIldefonsoRR/CurlToCode/releases/download/v2.0/SHA256SUMS.txt) · [All releases](https://github.com/sIldefonsoRR/CurlToCode/releases)
+
+> [!IMPORTANT]
+> The app isn't signed with an Apple Developer ID, so macOS blocks it the first time. Right-click the
+> installer (or the app, after installing) and choose **Open**, or allow it in
+> **System Settings ▸ Privacy & Security**.
+
+## Build from source
+
+Needs the Command Line Tools or Xcode:
 
 ```bash
 ./build.sh                 # -> build/CurlToCode.app (universal)

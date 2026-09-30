@@ -18,7 +18,8 @@ command, pick a language, copy the result.
 
 You need macOS 13 Ventura or later. The app runs natively on Apple silicon and Intel Macs.
 
-You can install it two ways:
+Download an installer from the [latest release](https://github.com/sIldefonsoRR/CurlToCode/releases/latest)
+(under **Assets**). There are two kinds:
 
 | File | How |
 |---|---|
