@@ -128,7 +128,21 @@ Tests/
 ./build/unit-tests Literals  # after a run: only suites whose name contains "Literals"
 ```
 
-`test.sh` exits non-zero if any test or syntax check fails.
+`test.sh` exits non-zero if any test or syntax check fails. Set `REQUIRE_ALL_TOOLCHAINS=1`
+to make a missing toolchain fail the run instead of being skipped.
+
+### Continuous integration
+
+`.github/workflows/tests.yml` runs on every push to `main`, on pull requests, and on demand
+(**Actions ▸ Tests ▸ Run workflow**). It uses a `macos-15` runner and two jobs:
+
+- **Unit + integration tests:** installs Python, Node, Go, Java (JDK 21), .NET 8 and PHP
+  (Ruby and Rust come with the runner), then runs `./test.sh` with
+  `REQUIRE_ALL_TOOLCHAINS=1`. So in CI the generated code is checked for **all nine**
+  languages, including Go (`go build`), PHP and Java, which may be skipped locally. If it
+  fails, the generated files are uploaded as the `generated-code` artifact.
+- **Build app and installers:** runs `Scripts/package.sh` and uploads the `.pkg` and `.dmg`
+  as the `installers` artifact (kept 14 days).
 
 ## Troubleshooting
 

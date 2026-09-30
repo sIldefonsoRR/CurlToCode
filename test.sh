@@ -5,6 +5,9 @@
 #
 #   ./test.sh          unit + integration
 #   ./test.sh --unit   unit tests only
+#
+# Set REQUIRE_ALL_TOOLCHAINS=1 (as CI does) to fail instead of skipping a language
+# whose toolchain isn't installed.
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build
@@ -32,7 +35,13 @@ FAILED=0
 report() { # language, ok count, bad count
     printf "  %-11s %s\n" "$1" "$2"
 }
-skip() { report "$1" "skipped ($2 not installed)"; }
+skip() {
+    if [[ "${REQUIRE_ALL_TOOLCHAINS:-}" == 1 ]]; then
+        FAILED=1; report "$1" "FAILED: $2 not installed (REQUIRE_ALL_TOOLCHAINS=1)"
+    else
+        report "$1" "skipped ($2 not installed)"
+    fi
+}
 
 check_each() { # language, extension, command...
     local lang=$1 ext=$2; shift 2
@@ -55,7 +64,13 @@ if command -v node >/dev/null; then check_each javascript mjs node --check; else
 if command -v ruby >/dev/null; then check_each ruby rb ruby -c; else skip ruby ruby; fi
 check_each swift swift swiftc -typecheck
 if command -v php >/dev/null; then check_each php php php -l; else skip php php; fi
-if command -v gofmt >/dev/null; then check_each go go gofmt -e -l; else skip go go; fi
+# Go: compile each file as its own module (stdlib only), which also catches unused imports
+if command -v go >/dev/null; then
+    go_check() { d=$(mktemp -d); cp "$1" "$d/main.go"; (cd "$d" && go mod init check >/dev/null 2>&1 && go build -o /dev/null .); }
+    check_each go go go_check
+else
+    skip go go
+fi
 if javac -version >/dev/null 2>&1; then
     java_check() { d=$(mktemp -d); cp "$1" "$d/Main.java"; javac -d "$d" "$d/Main.java"; }
     check_each java java java_check
@@ -90,13 +105,14 @@ fi
 # C#: build each file as the Program.cs of a scratch console project.
 if command -v dotnet >/dev/null; then
     C=build/csharp-check
-    if [ ! -f "$C/check.csproj" ]; then
-        mkdir -p "$C"
-        cat > "$C/check.csproj" <<'EOF'
+    DOTNET_MAJOR=$(dotnet --version | cut -d. -f1)  # target whichever SDK is installed
+    if ! grep -q "net$DOTNET_MAJOR.0" "$C/check.csproj" 2>/dev/null; then
+        rm -rf "$C" && mkdir -p "$C"
+        cat > "$C/check.csproj" <<EOF
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net$DOTNET_MAJOR.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>

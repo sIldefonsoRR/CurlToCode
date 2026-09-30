@@ -1,0 +1,91 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit + integration tests
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      # Every language's generated code must be checked; a missing toolchain fails the run.
+      REQUIRE_ALL_TOOLCHAINS: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      # Toolchains used to check the generated code (Ruby and Rust come with the runner)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      - name: Cache Rust dependencies (reqwest)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            build/rust-check/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('test.sh') }}
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          python3 --version; node --version; ruby --version; go version
+          javac -version; dotnet --version; php --version | head -1; cargo --version
+
+      - name: Run tests
+        run: ./test.sh
+
+      - name: Upload generated code on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-code
+          path: build/test-output/
+          retention-days: 7
+
+  build:
+    name: Build app and installers
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build app, .pkg and .dmg
+        run: ./Scripts/package.sh
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers
+          path: dist/
+          retention-days: 14

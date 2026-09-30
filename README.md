@@ -1,5 +1,7 @@
 # cURL to Code
 
+[![Tests](https://github.com/sIldefonsoRR/CurlToCode/actions/workflows/tests.yml/badge.svg)](https://github.com/sIldefonsoRR/CurlToCode/actions/workflows/tests.yml)
+
 A native macOS app that turns a `curl` command into ready-to-run code in nine languages.
 Paste a command (or open a file), pick a language, and copy or save the result. The code
 updates as you type.
