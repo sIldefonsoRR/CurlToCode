@@ -1,0 +1,8 @@
+# Build output (app bundle, test binaries, generated test files, snapshots)
+build/
+
+# Installers are produced by Scripts/package.sh; publish them as release assets instead
+dist/
+
+.DS_Store
+*.swp
